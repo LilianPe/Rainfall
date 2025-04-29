@@ -1,0 +1,9 @@
+On analyse level0 avec gdb
+
+On voit que le programme recupere argv
+le transforme en int avec atoi
+le compare avec 0x1a7 (423)
+
+on essaye alors ./level0 423 et cela
+ouvre un shell en tant que user1
+plus qu'a cat /home/user/level1/.pass
