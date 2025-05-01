@@ -1,0 +1,50 @@
+mots cles:
+
+repz cmpsb: repeat while not zero cmp
+premier:
+"auth "
+
+deuxieme:
+"reset"
+
+troisieme:
+"service"
+
+dernier:
+"login"
+
+but: passer la verif finale pour executer:
+system("/bin/sh")
+
+chaque mot cle fait une action
+
+auth:
+malloc(4) puis copy l'input dans ce malloc
+
+service:
+strdup l'input
+
+reset:
+free auth
+double free si double reset
+
+login:
+segfault quand pas de auth
+affiche password:
+ou ouvre un shell si auth+32 existe
+
+difficulte, strcpy n'est execute que si 
+l'input derriere auth est < a 32
+
+mais enfait cela se bypass facilement
+
+on voit avec gdb qu'en enchainant plusieurs
+malloc les adresses se suivent de pres sur la heap
+
+dont on ecrit une petite input dans auth
+
+puis une enorme input dans service qui l'ui
+n'a pas de restriction
+
+et auth + 32 tombera dans service qui sera defini
+

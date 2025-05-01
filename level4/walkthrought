@@ -1,0 +1,32 @@
+La meme que le level precedent, mais la
+on doit ecrire un nombre beaucoup plus
+grand, pour cela, on l'ecrit byte par byte
+puisque le nombre ressemble a cela:
+
+0x1025544
+
+plutot que d'ecrire 16930116 d'un coup a 
+l'adresse 0x8049810 (qui est comparee)
+
+on va decomposer le nombre en 4 (car int donc 4 octet)
+0x01 0x02 0x55 0x44
+
+qui devient:
+0x44 0x55 0x02 0x01 car little endian
+
+on utilise finalement au lieu de %n %hhn
+%n ecrit le nombre dans les 4 octets,
+hhn seulement dans l'octet cible
+
+input:
+
+echo -e "\x10\x98\x04\x08\x11\x98\x04\x08\x12\x98\x04\x08\x13\x98\x04\x08%241c%15\$
+hhnc%14\$hhn%66c%12\$hhn%17c%13\$hhn" > /tmp/input
+
+On met l'adresse 0x8049810 et les 3 suivante sur la stack
+et on ecrit 1 dans le dernier byte (%241c ecrit 241 characteres
+sachant que j'ai deja ecrit 16char avec les addresses,
+cela arrive a 257 qui revient a 1 (max 255))
+puis 2 dans l'avant dernier, puis 0x44 dans le premier,
+puis 0x55 dans le 2eme
+

